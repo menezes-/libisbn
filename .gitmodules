@@ -1,5 +1,5 @@
 [submodule "pybind11"]
-	path = pybind11
+	path = pylibisbn/pybind11
 	url = https://github.com/wjakob/pybind11.git
 [submodule "tests/Catch"]
 	path = tests/Catch
