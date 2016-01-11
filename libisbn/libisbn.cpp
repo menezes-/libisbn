@@ -110,10 +110,8 @@ std::string libisbn::to_isbn10(std::string isbn) {
     }
 
     if (!is_isbn13(isbn) || isbn.substr(0, 3) != "978") {
-        std::string error{isbn};
-        error.append(" is not a valid ISBN13");
 
-        throw std::invalid_argument(error);
+        throw std::invalid_argument(std::string(isbn + std::string{" is not a valid ISBN13"}));
 
     }
 
@@ -122,4 +120,24 @@ std::string libisbn::to_isbn10(std::string isbn) {
     isbn10.append(1,_digit10(isbn10));
 
     return isbn10;
+}
+
+std::string libisbn::to_isbn13(std::string isbn){
+
+    isbn = clean(isbn);
+
+    if(is_isbn13(isbn)){
+        return isbn;
+    }
+
+    if(!is_isbn10(isbn)){
+        throw std::invalid_argument(std::string(isbn + std::string{" is not a valid ISBN10"}));
+    }
+
+    std::string isbn13{"978" + isbn.substr(0, 9)};
+
+    isbn13.append(1, _digit13(isbn13));
+
+    return isbn13;
+
 }
