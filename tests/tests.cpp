@@ -39,7 +39,7 @@ TEST_CASE("ISBN13 convert", "[convert]") {
 
     REQUIRE(isbns13.size() == isbns10.size());
 
-    for (int i = 0; i < isbns13.size(); ++i) {
+    for (std::size_t i = 0; i < isbns13.size(); ++i) {
         CHECK(to_isbn10(isbns13[i]) == isbns10[i]);
     }
 
@@ -144,7 +144,7 @@ TEST_CASE("ISBN10 convert", "[convert]") {
 
     REQUIRE(isbns13.size() == isbns10.size());
 
-    for (int i = 0; i < isbns10.size(); ++i) {
+    for (std::size_t i = 0; i < isbns10.size(); ++i) {
         CHECK(to_isbn13(isbns10[i]) == isbns13[i]);
     }
 
