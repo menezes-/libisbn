@@ -79,17 +79,12 @@ bool libisbn::is_isbn10(std::string string) {
 
 std::string libisbn::clean(std::string s) {
 
-    bool allow_x = s.length() == 10;
-
-    s.erase(std::remove_if(s.begin(), s.end(), [allow_x](char x) {
-        if (allow_x && (x == 'x' || x == 'X')) {
-            return false;
-        }
-        return !std::isdigit(x);
+    s.erase(std::remove_if(s.begin(), s.end(),[](char x) {
+        return !std::isdigit(x) && !(x == 'x' || x == 'X');
     }), s.end());
 
     // if isbn10 make last character uppercase
-    if (allow_x) {
+    if (s.length() == 10) {
         char &c = s.back();
         c = std::toupper(c);
     }

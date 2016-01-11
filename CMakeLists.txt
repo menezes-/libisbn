@@ -33,6 +33,7 @@ install(FILES libisbn/include/libisbn.hpp DESTINATION include)
 
 set(TESTING_FILES tests/tests.cpp tests/Catch/single_include/catch.hpp)
 add_executable(unittest ${TESTING_FILES} libisbn/include/libisbn.hpp)
+target_link_libraries(unittest libisbn)
 enable_testing()
 add_test(AllTests COMMAND unittest)
 
