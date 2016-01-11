@@ -36,7 +36,7 @@ char _digit10(const std::string &nine) {
         digit += to_int(nine[i]) * weights[i];
     }
 
-    digit = 11 - (digit % 11);
+    digit = (11 - (digit % 11)) % 11;
 
     return digit == 10 ? 'X' : to_char(digit);
 
@@ -79,7 +79,7 @@ bool libisbn::is_isbn10(std::string string) {
 
 std::string libisbn::clean(std::string s) {
 
-    s.erase(std::remove_if(s.begin(), s.end(),[](char x) {
+    s.erase(std::remove_if(s.begin(), s.end(), [](char x) {
         return !std::isdigit(x) && !(x == 'x' || x == 'X');
     }), s.end());
 
@@ -112,20 +112,20 @@ std::string libisbn::to_isbn10(std::string isbn) {
 
     std::string isbn10{isbn, 3, 9};
 
-    isbn10.append(1,_digit10(isbn10));
+    isbn10.append(1, _digit10(isbn10));
 
     return isbn10;
 }
 
-std::string libisbn::to_isbn13(std::string isbn){
+std::string libisbn::to_isbn13(std::string isbn) {
 
     isbn = clean(isbn);
 
-    if(is_isbn13(isbn)){
+    if (is_isbn13(isbn)) {
         return isbn;
     }
 
-    if(!is_isbn10(isbn)){
+    if (!is_isbn10(isbn)) {
         throw std::invalid_argument(std::string(isbn + std::string{" is not a valid ISBN10"}));
     }
 

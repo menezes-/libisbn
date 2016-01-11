@@ -86,13 +86,14 @@ TEST_CASE("ISBN13 check", "[validate]") {
 
 TEST_CASE("ISBN10 check", "[check]") {
 
-    std::array<std::string, 6> valids = {
+    std::array<std::string, 7> valids = {
             "073627099x",
             "0736270078",
             "07362-70-043",
             "0736271414",
             "ISBN: 0736270140",
-            "4413008480"
+            "4413008480",
+            "0234567899"
 
     };
 
