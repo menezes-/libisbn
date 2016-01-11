@@ -98,7 +98,7 @@ std::string libisbn::clean(std::string s) {
 
 }
 
-bool libisbn::verify(std::string string) {
+bool libisbn::validate(std::string string) {
     return is_isbn10(string) || is_isbn13(string);
 }
 

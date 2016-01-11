@@ -15,8 +15,9 @@ set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/build/}")
 
 
 #LIBISBN
+include_directories( "libisbn/include/" )
 
-set(LIBISBN_SOURCE_FILES libisbn/libisbn.cpp libisbn/libisbn.hpp)
+set(LIBISBN_SOURCE_FILES libisbn/libisbn.cpp libisbn/include/libisbn.hpp)
 
 add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 
@@ -25,9 +26,17 @@ set_target_properties(libisbn PROPERTIES
                       LIBRARY_OUTPUT_DIRECTORY "CMAKE_RUNTIME_OUTPUT_DIRECTORY/libisbn")
 
 install(TARGETS libisbn DESTINATION lib)
-install(FILES libisbn/libisbn.hpp DESTINATION include)
+install(FILES libisbn/include/libisbn.hpp DESTINATION include)
 # /LIBISBN
 
+#UNIT TESTING
+
+set(TESTING_FILES tests/tests.cpp tests/Catch/single_include/catch.hpp)
+add_executable(unittest ${TESTING_FILES} libisbn/include/libisbn.hpp)
+enable_testing()
+add_test(AllTests COMMAND unittest)
+
+# /UNIT TESTING
 
 
 # DEVELOPMENT MAIN

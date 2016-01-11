@@ -16,7 +16,7 @@ namespace libisbn {
     /**
      * verify if it is either a isbn10 or 13
      */
-    bool verify(std::string string);
+    bool validate(std::string string);
 
     /**
      * convert isbn13 to isbn10
