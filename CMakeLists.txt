@@ -16,7 +16,9 @@ set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/build/}")
 #LIBISBN
 include_directories("libisbn/include/")
 
-set(LIBISBN_SOURCE_FILES libisbn/libisbn.cpp libisbn/include/libisbn.hpp)
+set(LIBISBN_INCLUDE_FILES libisbn/include/libisbn.hpp)
+
+set(LIBISBN_SOURCE_FILES libisbn/libisbn.cpp ${LIBISBN_INCLUDE_FILES})
 
 add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 
@@ -41,17 +43,22 @@ if (PYTHON)
 
     set(PYBIND11_HEADERS
             pylibisbn/pybind11/include/pybind11/pybind11.h
-            pylibisbn/pybind11/include/pybind11/numpy.h) # for numpy vectorization
+            )
 
     add_library(pylibisbn SHARED
             ${PYBIND11_HEADERS}
+            ${LIBISBN_INCLUDE_FILES}
             pylibisbn/pylibisbn.cpp)
+
+    target_link_libraries(pylibisbn libisbn)
 
     set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pylibisbn")
 
     set_target_properties(pylibisbn PROPERTIES
             PREFIX ""
-            LIBRARY_OUTPUT_DIRECTORY ${PYLIBISBN_OUTPUT_DIRECTORY})
+            LIBRARY_OUTPUT_DIRECTORY ${PYLIBISBN_OUTPUT_DIRECTORY}
+            COMPILE_FLAGS "-fvisibility=hidden -Wno-effc++"
+            )
 
     if (WIN32)
 
