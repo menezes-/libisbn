@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 2.8)
 project(isbn)
 
 
@@ -9,9 +9,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Weffc++")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O3 -DNDEBUG -flto")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/build/")
-set(EXECUTABLE_OUTPUT_PATH "${PROJECT_SOURCE_DIR}/build/}")
+option(BUILD_PYTHON_BINDINGS "Build python bindings" ON)
 
+
+set(PACKAGE_VERSION "0.1")
 
 #LIBISBN
 include_directories("libisbn/include/")
@@ -24,7 +25,7 @@ add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 
 set_target_properties(libisbn PROPERTIES
         PREFIX ""
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/libisbn")
+        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/libisbn")
 
 install(TARGETS libisbn DESTINATION lib)
 install(FILES libisbn/include/libisbn.hpp DESTINATION include)
@@ -32,7 +33,7 @@ install(FILES libisbn/include/libisbn.hpp DESTINATION include)
 
 #PYTHON BINDINGS
 find_program(PYTHON "python")
-if (PYTHON)
+if (PYTHON AND BUILD_PYTHON_BINDINGS)
 
     set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use")
     set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
@@ -52,7 +53,7 @@ if (PYTHON)
 
     target_link_libraries(pylibisbn libisbn)
 
-    set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/pylibisbn")
+    set(PYLIBISBN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/pylibisbn")
 
     set_target_properties(pylibisbn PROPERTIES
             PREFIX ""
@@ -86,6 +87,17 @@ if (PYTHON)
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".so")
     endif ()
 
+    execute_process(
+            COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
+            OUTPUT_VARIABLE PYTHON_INSTDIR
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    install(TARGETS pylibisbn
+            EXPORT pylibisbn
+            LIBRARY DESTINATION ${PYTHON_INSTDIR}
+            )
+
+
 
 endif ()
 
@@ -101,11 +113,3 @@ enable_testing()
 add_test(AllTests COMMAND unittest)
 
 # /UNIT TESTING
-
-
-# DEVELOPMENT MAIN
-set(SOURCE_FILES main.cpp)
-add_executable(isbn ${SOURCE_FILES})
-target_link_libraries(isbn libisbn)
-set_target_properties(isbn PROPERTIES OUTPUT_NAME "main-${CMAKE_BUILD_TYPE}")
-# / DEVELOPMENT MAIN
