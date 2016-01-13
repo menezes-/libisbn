@@ -11,6 +11,15 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
 
 option(BUILD_PYTHON_BINDINGS "Build python bindings" ON)
 
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    message(STATUS "Setting build type to 'Release' as none was specified.")
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+    # Set the possible values of build type for cmake-gui
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+            "MinSizeRel" "RelWithDebInfo")
+endif()
+
 
 set(PACKAGE_VERSION "0.1")
 
@@ -110,6 +119,6 @@ set(TESTING_FILES tests/tests.cpp tests/Catch/single_include/catch.hpp)
 add_executable(unittest ${TESTING_FILES} libisbn/include/libisbn.hpp)
 target_link_libraries(unittest libisbn)
 enable_testing()
-add_test(AllTests COMMAND unittest)
+add_test(testLibIsbn unittest)
 
 # /UNIT TESTING
