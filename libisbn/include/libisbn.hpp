@@ -7,7 +7,7 @@ namespace libisbn {
     /**
      * remove everything that isn't a digit or "x" (only check for "x" if string len is 10)
      */
-    std::string clean(std::string);
+    void clean(std::string&);
 
     bool is_isbn13(std::string string);
 

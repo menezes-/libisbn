@@ -13,11 +13,11 @@
 
 //enum class ReturnCode;
 
-constexpr int to_int(char x) {
+constexpr int to_int(char x) noexcept {
     return x - '0';
 }
 
-constexpr char to_char(int x) {
+constexpr char to_char(int x) noexcept {
     return x + '0';
 }
 
@@ -70,12 +70,12 @@ char _digit13_sse(const std::string &twelve){
 
 char _digit13(const std::string &twelve) {
 
+    static int weights[12] = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3};
+
     int digit = 0;
 
     for (std::size_t i = 0; i < 12; ++i) {
-
-        int d = to_int(twelve[i]);
-        digit += d * (i % 2 * 2 + 1);
+        digit += to_int(twelve[i]) * weights[i];
     }
     digit = 10 - (digit % 10);
     return digit == 10 ? '0' : to_char(digit);
@@ -83,7 +83,7 @@ char _digit13(const std::string &twelve) {
 }
 
 char _digit10(const std::string &nine) {
-    static int weights[] = {10, 9, 8, 7, 6, 5, 4, 3, 2};
+    static int weights[9] = {10, 9, 8, 7, 6, 5, 4, 3, 2};
 
     int digit = 0;
 
@@ -99,8 +99,9 @@ char _digit10(const std::string &nine) {
 }
 
 bool libisbn::is_isbn13(std::string string) {
+    static std::string a1{"978"}, a2{"979"};
 
-    string = clean(string);
+    clean(string);
     if (string.length() != 13) {
         return false;
     }
@@ -108,7 +109,7 @@ bool libisbn::is_isbn13(std::string string) {
     std::string p = string.substr(0, 3);
 
 
-    if (p != "978" && p != "979") {
+    if (p != a1 && p != a2) {
 
         return false;
     }
@@ -122,29 +123,36 @@ bool libisbn::is_isbn13(std::string string) {
 
 bool libisbn::is_isbn10(std::string string) {
 
-    string = clean(string);
+    clean(string);
 
     if (string.length() != 10) {
         return false;
     }
 
-    return _digit10(string.substr(0, 9)) == string.back();
+    int i, s = 0, t = 0;
+
+    for (i = 0; i < 10; ++i) {
+        char c = string[i];
+        int d = c == 'X' ? 10 : to_int(c);
+        t += d;
+        s += t;
+    }
+    return (11 - (s % 11)) % 11 == 0;
+
 }
 
 
-std::string libisbn::clean(std::string s) {
+void libisbn::clean(std::string &s) {
 
     s.erase(std::remove_if(s.begin(), s.end(), [](char x) {
         return !std::isdigit(x) && !(x == 'x' || x == 'X');
     }), s.end());
 
     // if isbn10 make last character uppercase
-    if (s.length() == 10) {
-        char &c = s.back();
-        c = std::toupper(c);
-    }
+    if (s.back() == 'x' && s.length() == 10) {
+        s.back() = 'X';
 
-    return s;
+    }
 
 }
 
@@ -153,13 +161,16 @@ bool libisbn::validate(std::string string) {
 }
 
 std::string libisbn::to_isbn10(std::string isbn) {
-    isbn = clean(isbn);
+
+    static std::string valid_prefix{"978"};
+
+    clean(isbn);
 
     if (is_isbn10(isbn)) {
         return isbn;
     }
 
-    if (!is_isbn13(isbn) || isbn.substr(0, 3) != "978") {
+    if (!is_isbn13(isbn) || isbn.substr(0, 3) != valid_prefix) {
 
         throw std::invalid_argument(std::string(isbn + std::string{" is not a valid ISBN13"}));
 
@@ -174,7 +185,7 @@ std::string libisbn::to_isbn10(std::string isbn) {
 
 std::string libisbn::to_isbn13(std::string isbn) {
 
-    isbn = clean(isbn);
+    clean(isbn);
 
     if (is_isbn13(isbn)) {
         return isbn;

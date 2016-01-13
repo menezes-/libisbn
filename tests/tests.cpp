@@ -8,12 +8,23 @@
 using namespace libisbn;
 
 TEST_CASE("clean") {
-    REQUIRE(clean("978-1-891830-75-4") == "9781891830754");
-    REQUIRE(clean("9781891830754") == "9781891830754");
-    REQUIRE(clean("isbn 979-10-90636-07-1") == "9791090636071");
-    REQUIRE(clean("073627099x") == "073627099X");
-    REQUIRE(clean("ISBN: 07-362-7099x   ") == "073627099X");
-    REQUIRE(clean("0-7362-7004-3") == "0736270043");
+
+    std::string t1{"978-1-891830-75-4"}, t2{"9781891830754"}, t3{"isbn 979-10-90636-07-1"},
+                t4{"073627099x"}, t5{"ISBN: 07-362-7099x   "}, t6{"0-7362-7004-3"};
+
+    clean(t1);
+    clean(t2);
+    clean(t3);
+    clean(t4);
+    clean(t5);
+    clean(t6);
+
+    REQUIRE(t1 == "9781891830754");
+    REQUIRE(t2 == "9781891830754");
+    REQUIRE(t3 == "9791090636071");
+    REQUIRE(t4 == "073627099X");
+    REQUIRE(t5 == "073627099X");
+    REQUIRE(t6 == "0736270043");
 
 
 }
