@@ -1,7 +1,15 @@
 #include "libisbn.hpp"
 #include <algorithm>
 #include <iostream>
+#include <cstdint>
 #include <stdexcept>
+
+#if defined(_MSC_VER)
+#include <intrin.h>
+#elif defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__))
+#include <x86intrin.h>
+
+#endif
 
 //enum class ReturnCode;
 
@@ -13,11 +21,58 @@ constexpr char to_char(int x) {
     return x + '0';
 }
 
+
+// taken from http://stackoverflow.com/a/10501533/482238
+inline __m128i muly(const __m128i &a, const __m128i &b) {
+#ifdef __SSE4_1__  // modern CPU - use SSE 4.1
+    return _mm_mullo_epi32(a, b);
+#else               // old CPU - use SSE 2
+    __m128i tmp1 = _mm_mul_epu32(a,b); /* mul 2,0*/
+    __m128i tmp2 = _mm_mul_epu32( _mm_srli_si128(a,4), _mm_srli_si128(b,4)); /* mul 3,1 */
+    return _mm_unpacklo_epi32(_mm_shuffle_epi32(tmp1, _MM_SHUFFLE (0,0,2,0)), _mm_shuffle_epi32(tmp2, _MM_SHUFFLE (0,0,2,0))); /* shuffle results to [63..0] and pack */
+#endif
+}
+
+
+inline std::int32_t dot_product(const std::int32_t* arr, const std::int32_t* coeff){
+
+    __m128i temp_sum = _mm_setzero_si128();
+
+    for (size_t i = 0; i < 12; i += 4) {
+        __m128i v0 = _mm_load_si128((__m128i *) (arr + i));
+        __m128i v1 = _mm_load_si128((__m128i *) (coeff + i));
+        __m128i temp_products = muly(v0, v1);
+        temp_sum = _mm_add_epi32(temp_sum, temp_products);
+    }
+
+    __m128i r1 = _mm_hadd_epi32(temp_sum, temp_sum);
+    int32_t sum = _mm_cvtsi128_si32(_mm_hadd_epi32(r1, r1));
+    return sum;
+
+}
+
+
+
+char _digit13_sse(const std::string &twelve){
+    static const std::int32_t coeffs[12]  __attribute__ ((aligned (16))) = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3};
+    std::int32_t digits[12] __attribute__ ((aligned (16))) = {0};
+    for (std::size_t i = 0; i < 12; ++i) {
+        digits[i] = to_int(twelve[i]);
+
+    }
+
+    std::int32_t digit = dot_product(digits, coeffs);
+    digit = 10 - (digit % 10);
+    return digit == 10 ? '0' : to_char(digit);
+
+
+}
+
 char _digit13(const std::string &twelve) {
 
     int digit = 0;
 
-    for (std::size_t i = 0; i < twelve.length(); ++i) {
+    for (std::size_t i = 0; i < 12; ++i) {
 
         int d = to_int(twelve[i]);
         digit += d * (i % 2 * 2 + 1);
@@ -59,7 +114,7 @@ bool libisbn::is_isbn13(std::string string) {
     }
 
 
-    return _digit13(string.substr(0, 12)) == string.back();
+    return _digit13_sse(string.substr(0, 12)) == string.back();
 
 
 }
