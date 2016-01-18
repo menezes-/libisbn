@@ -1,15 +1,31 @@
 cmake_minimum_required(VERSION 2.8)
 project(isbn)
 
+include(CheckCXXCompilerFlag)
 
 # set ( CMAKE_VERBOSE_MAKEFILE true)
 
 # GLOBAL CONFIGURATION
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Weffc++")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O3 -DNDEBUG -flto")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O3 -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
 
-option(INSTALL_LIBISBN "Install libisbn" OFF)
+option(INSTALL_LIBISBN "Install libisbn (C++ headers and shared library)" OFF)
+option(ENABLE_LTO "Enable LTO optimization" OFF)
+
+if (NOT WIN32)
+    set(ENABLE_LTO ON CACHE BOOL "Install libisbn (C++ headers and shared library)")  #LTO was giving me problems on windows
+endif ()
+
+if (ENABLE_LTO)
+    CHECK_CXX_COMPILER_FLAG("-flto" HAS_LTO_FLAG)
+    if (HAS_LTO_FLAG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
+    else ()
+        message(WARNING "Compiler doesn't support LTO ")
+    endif ()
+endif ()
+
 
 # Set a default build type if none was specified
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
