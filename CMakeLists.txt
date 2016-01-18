@@ -9,16 +9,16 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Weffc++")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O3 -DNDEBUG -flto")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
 
-option(BUILD_PYTHON_BINDINGS "Build python bindings" ON)
+option(INSTALL_LIBISBN "Install libisbn" OFF)
 
 # Set a default build type if none was specified
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'Release' as none was specified.")
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
     # Set the possible values of build type for cmake-gui
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
             "MinSizeRel" "RelWithDebInfo")
-endif()
+endif ()
 
 
 set(PACKAGE_VERSION "0.1")
@@ -35,19 +35,20 @@ add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 set_target_properties(libisbn PROPERTIES
         PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/libisbn")
-
-install(TARGETS libisbn DESTINATION lib)
-install(FILES libisbn/include/libisbn.hpp DESTINATION include)
+if (INSTALL_LIBISBN)
+    install(TARGETS libisbn DESTINATION lib)
+    install(FILES libisbn/include/libisbn.hpp DESTINATION include)
+endif ()
 # /LIBISBN
 
 #PYTHON BINDINGS
 find_program(PYTHON "python")
-if (PYTHON AND BUILD_PYTHON_BINDINGS)
+if (PYTHON)
 
     set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use")
     set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
-    find_package(PythonLibs ${PYBIND11_PYTHON_VERSION} REQUIRED)
     find_package(PythonInterp ${PYBIND11_PYTHON_VERSION} REQUIRED)
+    find_package(PythonLibs ${PYBIND11_PYTHON_VERSION} REQUIRED)
     include_directories("pylibisbn/pybind11/include")
     include_directories(${PYTHON_INCLUDE_DIR})
 
@@ -95,17 +96,6 @@ if (PYTHON AND BUILD_PYTHON_BINDINGS)
         # .SO file extension on Linux/Mac OS
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".so")
     endif ()
-
-    execute_process(
-            COMMAND ${PYTHON_EXECUTABLE} -c "from distutils import sysconfig; print(sysconfig.get_python_lib(1,0,prefix=''))"
-            OUTPUT_VARIABLE PYTHON_INSTDIR
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-    install(TARGETS pylibisbn
-            EXPORT pylibisbn
-            LIBRARY DESTINATION ${PYTHON_INSTDIR}
-            )
-
 
 
 endif ()
