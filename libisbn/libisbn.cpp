@@ -2,8 +2,9 @@
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
+#include <array>
 
-//enum class ReturnCode;
+
 
 constexpr int to_int(char x) noexcept {
     return x - '0';
@@ -13,14 +14,17 @@ constexpr char to_char(int x) noexcept {
     return x + '0';
 }
 
+constexpr std::array<int, 12> ISBN13_W {{1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3}};
+
+constexpr std::array<int, 9> ISBN10_W {{10, 9, 8, 7, 6, 5, 4, 3, 2}};
+
+constexpr auto VALID_ISBN13_PREFIX = "978"; // only ISBN13 with this prefix can be converted to ISBN10
+
 char _digit13(const std::string &twelve) {
-
-    static int weights[12] = {1, 3, 1, 3, 1, 3, 1, 3, 1, 3, 1, 3};
-
     int digit = 0;
 
     for (std::size_t i = 0; i < 12; ++i) {
-        digit += to_int(twelve[i]) * weights[i];
+        digit += to_int(twelve[i]) * ISBN13_W[i];
     }
     digit = 10 - (digit % 10);
     return digit == 10 ? '0' : to_char(digit);
@@ -28,12 +32,10 @@ char _digit13(const std::string &twelve) {
 }
 
 char _digit10(const std::string &nine) {
-    static int weights[9] = {10, 9, 8, 7, 6, 5, 4, 3, 2};
-
     int digit = 0;
 
     for (int i = 0; i < 9; ++i) {
-        digit += to_int(nine[i]) * weights[i];
+        digit += to_int(nine[i]) * ISBN10_W[i];
     }
 
     digit = (11 - (digit % 11)) % 11;
@@ -44,7 +46,7 @@ char _digit10(const std::string &nine) {
 }
 
 bool libisbn::is_isbn13(std::string string) {
-    static std::string a1{"978"}, a2{"979"};
+    static std::string a1{VALID_ISBN13_PREFIX}, a2{"979"};
 
     clean(string);
     if (string.length() != 13) {
@@ -74,15 +76,7 @@ bool libisbn::is_isbn10(std::string string) {
         return false;
     }
 
-    int i, s = 0, t = 0;
-
-    for (i = 0; i < 10; ++i) {
-        char c = string[i];
-        int d = c == 'X' ? 10 : to_int(c);
-        t += d;
-        s += t;
-    }
-    return (11 - (s % 11)) % 11 == 0;
+    return _digit10(string.substr(0, 9)) == string.back();
 
 }
 
@@ -107,7 +101,7 @@ bool libisbn::validate(std::string string) {
 
 std::string libisbn::to_isbn10(std::string isbn) {
 
-    static std::string valid_prefix{"978"};
+    static std::string valid_prefix{VALID_ISBN13_PREFIX};
 
     clean(isbn);
 
