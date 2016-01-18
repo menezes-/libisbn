@@ -134,7 +134,7 @@ std::string libisbn::to_isbn13(std::string isbn) {
         throw std::invalid_argument(std::string(isbn + std::string{" is not a valid ISBN10"}));
     }
 
-    std::string isbn13{"978" + isbn.substr(0, 9)};
+    std::string isbn13{VALID_ISBN13_PREFIX + isbn.substr(0, 9)};
 
     isbn13.append(1, _digit13(isbn13));
 
