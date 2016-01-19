@@ -4,11 +4,19 @@
 namespace py = pybind11;
 using namespace libisbn;
 
+/**
+ * More pythonic function. Work on a copy of the string
+ */
+std::string clean_py(std::string s){
+    clean(s);
+    return s;
+}
+
 PYBIND11_PLUGIN(pylibisbn) {
 
     py::module m("pylibisbn", "Simple module, written in C++, to work with ISBNs");
 
-    m.def("clean", &clean, "Cleans isbn string leaving only valid characters");
+    m.def("clean", &clean_py, "Cleans isbn string leaving only valid characters");
 
     m.def("is_isbn10", &is_isbn10, "Check if string is a valid ISBN10");
 
