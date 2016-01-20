@@ -1,6 +1,5 @@
 #include "libisbn.hpp"
 #include <algorithm>
-#include <iostream>
 #include <stdexcept>
 #include <array>
 

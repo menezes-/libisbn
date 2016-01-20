@@ -9,19 +9,26 @@ include(CheckCXXCompilerFlag)
 
 CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
+CHECK_CXX_COMPILER_FLAG("-fsanitize=address" HAS_ASAN_FLAG)
 
 if (HAS_CPP14_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     message(STATUS "Compiling with c++14 support")
 elseif (HAS_CPP11_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-else()
+else ()
     message(FATAL_ERROR "Unsupported compiler needs C++11 support!")
-endif()
+endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O3 -ffast-math -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O2 -march=native -ffast-math -DNDEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
+
+if (HAS_ASAN_FLAG)
+    message(STATUS "Enabling address sanitizer")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls")
+endif ()
+
 
 option(INSTALL_LIBISBN "Install libisbn (C++ headers and shared library)" OFF)
 option(ENABLE_LTO "Enable LTO optimization" OFF)
@@ -63,7 +70,7 @@ add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 
 set_target_properties(libisbn PROPERTIES
         PREFIX ""
-        LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/libisbn")
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libisbn")
 if (INSTALL_LIBISBN)
     install(TARGETS libisbn DESTINATION lib)
     install(FILES libisbn/include/libisbn.hpp DESTINATION include)
@@ -92,7 +99,7 @@ if (PYTHON)
 
     target_link_libraries(pylibisbn libisbn)
 
-    set(PYLIBISBN_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/pylibisbn")
+    set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pylibisbn")
 
     set_target_properties(pylibisbn PROPERTIES
             PREFIX ""
