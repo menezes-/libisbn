@@ -133,6 +133,11 @@ if (PYTHON)
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".so")
     endif ()
 
+    add_custom_command(TARGET pylibisbn POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:libisbn>
+            $<TARGET_FILE_DIR:pylibisbn>)
+
 
 endif ()
 
