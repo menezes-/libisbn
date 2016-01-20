@@ -11,6 +11,26 @@ CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
 CHECK_CXX_COMPILER_FLAG("-fsanitize=address" HAS_ASAN_FLAG)
 
+set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use")
+set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
+find_package(PythonInterp ${PYBIND11_PYTHON_VERSION} REQUIRED)
+
+# handle the case where i'm using windows 64 but my python is 32 bit
+if (WIN32)
+
+    execute_process(
+            COMMAND ${PYTHON_EXECUTABLE} -c "import struct;print( 8 * struct.calcsize('P'))"
+            OUTPUT_VARIABLE PYTHON_ARCH
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (CMAKE_SIZEOF_VOID_P EQUAL 8 AND "${PYTHON_ARCH}" STREQUAL "32")
+        message(STATUS "Using 32 bit Python with 64 bit Windows, compiling with -m32")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -m32")
+    endif ()
+
+endif ()
+
 if (HAS_CPP14_FLAG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
     message(STATUS "Compiling with c++14 support")
@@ -77,12 +97,9 @@ endif ()
 # /LIBISBN
 
 #PYTHON BINDINGS
-find_program(PYTHON "python")
-if (PYTHON)
 
-    set(PYBIND11_PYTHON_VERSION "" CACHE STRING "Python version to use")
-    set(Python_ADDITIONAL_VERSIONS 3.4 3.5 3.6)
-    find_package(PythonInterp ${PYBIND11_PYTHON_VERSION} REQUIRED)
+if (PYTHON_EXECUTABLE)
+
     find_package(PythonLibs ${PYBIND11_PYTHON_VERSION} REQUIRED)
     include_directories("pylibisbn/pybind11/include")
     include_directories(${PYTHON_INCLUDE_DIR})
@@ -106,18 +123,8 @@ if (PYTHON)
             COMPILE_FLAGS "-fvisibility=hidden -Wno-effc++"
             )
 
-    # handle the case where i'm using windows 64 but my python is 32 bit
-    if (WIN32)
-        execute_process(
-                COMMAND ${PYTHON_EXECUTABLE} -c "import struct;print( 8 * struct.calcsize('P'))"
-                OUTPUT_VARIABLE PYTHON_ARCH
-                OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
-    endif ()
 
     if (WIN32)
-
-
         # .PYD file extension on Windows
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".pyd")
 
