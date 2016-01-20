@@ -102,7 +102,7 @@ if (PYTHON)
     set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pylibisbn")
 
     set_target_properties(pylibisbn PROPERTIES
-            PREFIX "_"
+            PREFIX ""
             LIBRARY_OUTPUT_DIRECTORY ${PYLIBISBN_OUTPUT_DIRECTORY}
             COMPILE_FLAGS "-fvisibility=hidden -Wno-effc++"
             )
