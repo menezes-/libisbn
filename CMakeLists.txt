@@ -22,7 +22,6 @@ endif ()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Weffc++")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -s -O2 -march=native -ffast-math -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -g -O0")
 
 if (HAS_ASAN_FLAG)
     message(STATUS "Enabling address sanitizer")
@@ -106,6 +105,15 @@ if (PYTHON)
             LIBRARY_OUTPUT_DIRECTORY ${PYLIBISBN_OUTPUT_DIRECTORY}
             COMPILE_FLAGS "-fvisibility=hidden -Wno-effc++"
             )
+
+    # handle the case where i'm using windows 64 but my python is 32 bit
+    if (WIN32)
+        execute_process(
+                COMMAND ${PYTHON_EXECUTABLE} -c "import struct;print( 8 * struct.calcsize('P'))"
+                OUTPUT_VARIABLE PYTHON_ARCH
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    endif ()
 
     if (WIN32)
 
