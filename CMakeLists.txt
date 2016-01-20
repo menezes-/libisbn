@@ -99,6 +99,11 @@ endif ()
 #PYTHON BINDINGS
 
 if (PYTHON_EXECUTABLE)
+    set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pylibisbn")
+    set(PY_PACKAGE_DIR "${CMAKE_SOURCE_DIR}/pylibisbn/py_package")
+    set(PY_PACKAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/py_package")
+    set(SETUP_PY "${PY_PACKAGE_OUTPUT_DIR}/setup.py")
+    set(OUTPUT "${CMAKE_BINARY_DIR}/py_timestamp")
 
     find_package(PythonLibs ${PYBIND11_PYTHON_VERSION} REQUIRED)
     include_directories("pylibisbn/pybind11/include")
@@ -114,8 +119,6 @@ if (PYTHON_EXECUTABLE)
             pylibisbn/pylibisbn.cpp)
 
     target_link_libraries(pylibisbn libisbn)
-
-    set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pylibisbn")
 
     set_target_properties(pylibisbn PROPERTIES
             PREFIX ""
@@ -147,12 +150,18 @@ if (PYTHON_EXECUTABLE)
         # .SO file extension on Linux/Mac OS
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".so")
     endif ()
+    add_custom_command(
+            OUTPUT ${OUTPUT}
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${PY_PACKAGE_DIR} ${PY_PACKAGE_OUTPUT_DIR}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:pylibisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
+            DEPENDS pylibisbn
+            COMMENT "Creating python package"
+    )
 
-    add_custom_command(TARGET pylibisbn POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_FILE:libisbn>
-            $<TARGET_FILE_DIR:pylibisbn>)
+    add_custom_target(target ALL DEPENDS ${OUTPUT})
 
+    install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" ${SETUP_PY} install)")
 
 endif ()
 
