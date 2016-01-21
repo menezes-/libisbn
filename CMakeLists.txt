@@ -55,7 +55,6 @@ if (HAS_ASAN_FLAG)
 endif ()
 
 
-option(INSTALL_LIBISBN "Install libisbn (C++ headers and shared library)" OFF)
 option(ENABLE_LTO "Enable LTO optimization" OFF)
 
 if (UNIX)
@@ -99,10 +98,8 @@ set_target_properties(libisbn PROPERTIES
         PREFIX ""
         LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libisbn"
         )
-if (INSTALL_LIBISBN)
-    install(TARGETS libisbn DESTINATION lib)
-    install(FILES libisbn/include/libisbn.hpp DESTINATION include)
-endif ()
+install(TARGETS libisbn DESTINATION lib)
+install(FILES libisbn/include/libisbn.hpp DESTINATION include)
 # /LIBISBN
 
 enable_testing()
