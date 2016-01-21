@@ -6,6 +6,16 @@ include(CheckCXXCompilerFlag)
 # set ( CMAKE_VERBOSE_MAKEFILE true)
 
 # GLOBAL CONFIGURATION
+set(LIBISBN_VERSION_MAJOR 1)
+set(LIBISBN_VERSION_MINOR 0)
+set(LIBISBN_VERSION_PATCH 0)
+set(LIBISBN_VERSION_STRING ${LIBISBN_VERSION_MAJOR}.${LIBISBN_VERSION_MINOR}.${LIBISBN_VERSION_PATCH})
+
+set(PYLIBISBN_VERSION_MAJOR 1)
+set(PYLIBISBN_VERSION_MINOR 0)
+set(PYLIBISBN_VERSION_PATCH 0)
+set(PYLIBISBN_VERSION_STRING ${PYLIBISBN_VERSION_MAJOR}.${PYLIBISBN_VERSION_MINOR}.${PYLIBISBN_VERSION_PATCH})
+
 
 CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
@@ -76,8 +86,6 @@ if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
 endif ()
 
 
-set(PACKAGE_VERSION "0.1")
-
 #LIBISBN
 include_directories("libisbn/include/")
 
@@ -89,7 +97,10 @@ add_library(libisbn SHARED ${LIBISBN_SOURCE_FILES})
 
 set_target_properties(libisbn PROPERTIES
         PREFIX ""
-        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libisbn")
+        LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/libisbn"
+        VERSION ${LIBISBN_VERSION_STRING}
+        SOVERSION ${LIBISBN_VERSION_MAJOR}
+        )
 if (INSTALL_LIBISBN)
     install(TARGETS libisbn DESTINATION lib)
     install(FILES libisbn/include/libisbn.hpp DESTINATION include)
@@ -104,6 +115,8 @@ if (PYTHON_EXECUTABLE)
     set(PY_PACKAGE_DIR "${CMAKE_SOURCE_DIR}/pylibisbn/py_package")
     set(PY_PACKAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/py_package")
     set(PY_MODULE "${PY_PACKAGE_DIR}/pylibisbn/__init__.py")
+    set(SETUP_PY_IN "${PY_PACKAGE_DIR}/setup.py.in")
+    set(SETUP_PY_TEMP "${CMAKE_BINARY_DIR}/setup.py.temp")
     set(SETUP_PY "${PY_PACKAGE_OUTPUT_DIR}/setup.py")
     set(OUTPUT "${CMAKE_BINARY_DIR}/py_timestamp")
 
@@ -126,6 +139,8 @@ if (PYTHON_EXECUTABLE)
             PREFIX ""
             LIBRARY_OUTPUT_DIRECTORY ${PYLIBISBN_OUTPUT_DIRECTORY}
             COMPILE_FLAGS "-fvisibility=hidden -Wno-effc++"
+            VERSION ${PYLIBISBN_VERSION_STRING}
+            SOVERSION ${PYLIBISBN_VERSION_MAJOR}
             )
 
 
@@ -152,12 +167,16 @@ if (PYTHON_EXECUTABLE)
         # .SO file extension on Linux/Mac OS
         set_target_properties(pylibisbn PROPERTIES SUFFIX ".so")
     endif ()
+
+    configure_file(${SETUP_PY_IN} ${SETUP_PY_TEMP})
+
     add_custom_command(
             OUTPUT ${OUTPUT}
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${PY_PACKAGE_DIR} ${PY_PACKAGE_OUTPUT_DIR}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
             COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:pylibisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
-            DEPENDS pylibisbn ${SETUP_PY} ${PY_MODULE}
+            COMMAND ${CMAKE_COMMAND} -E rename ${SETUP_PY_TEMP} ${SETUP_PY}
+            DEPENDS pylibisbn ${SETUP_PY_IN} ${PY_MODULE}
             COMMENT "Creating python package"
     )
 

@@ -9,7 +9,7 @@ def package_data():
 
 setup(
         name='pylibisbn',
-        version='0.1',
+        version='${PYLIBISBN_VERSION_STRING}',
         packages=find_packages(exclude=['tests']),
         url='https://github.com/menezes-/libisbn',
         package_data={"pylibisbn":package_data()},
