@@ -12,6 +12,7 @@ setup(
         version='${PYLIBISBN_VERSION_STRING}',
         packages=find_packages(exclude=['tests']),
         url='https://github.com/menezes-/libisbn',
+        download_url='https://github.com/menezes-/libisbn/releases/latest',
         package_data={"pylibisbn":package_data()},
         license='MIT',
         author='Gabriel',
