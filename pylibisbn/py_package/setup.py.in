@@ -5,7 +5,7 @@ def package_data():
     if os.name == 'nt':
         return ["*.pyd", "*.dll"]
     else:
-        return ["*.so"]
+        return ["pylibisbn.so"]
 
 setup(
         name='pylibisbn',

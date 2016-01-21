@@ -58,6 +58,10 @@ endif ()
 option(INSTALL_LIBISBN "Install libisbn (C++ headers and shared library)" OFF)
 option(ENABLE_LTO "Enable LTO optimization" OFF)
 
+if (UNIX)
+    SET(INSTALL_LIBISBN ON CACHE BOOL "Needs to be installed on linux")
+endif ()
+
 if (NOT WIN32)
     set(ENABLE_LTO ON CACHE BOOL "Install libisbn (C++ headers and shared library)")  #LTO was giving me problems on windows
 endif ()
@@ -171,7 +175,6 @@ if (PYTHON_EXECUTABLE)
             DEPENDS pylibisbn ${SETUP_PY_IN} ${PY_MODULE}
             COMMENT "Creating python package"
     )
-
     add_custom_target(python_package ALL DEPENDS ${OUTPUT})
 
     install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" ${SETUP_PY} install WORKING_DIRECTORY ${PY_PACKAGE_OUTPUT_DIR})")
