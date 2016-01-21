@@ -103,6 +103,7 @@ if (PYTHON_EXECUTABLE)
     set(PYLIBISBN_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/pylibisbn")
     set(PY_PACKAGE_DIR "${CMAKE_SOURCE_DIR}/pylibisbn/py_package")
     set(PY_PACKAGE_OUTPUT_DIR "${CMAKE_BINARY_DIR}/py_package")
+    set(PY_MODULE "${PY_PACKAGE_DIR}/pylibisbn/__init__.py")
     set(SETUP_PY "${PY_PACKAGE_OUTPUT_DIR}/setup.py")
     set(OUTPUT "${CMAKE_BINARY_DIR}/py_timestamp")
 
@@ -156,13 +157,13 @@ if (PYTHON_EXECUTABLE)
             COMMAND ${CMAKE_COMMAND} -E copy_directory ${PY_PACKAGE_DIR} ${PY_PACKAGE_OUTPUT_DIR}
             COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:libisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
             COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:pylibisbn> ${PY_PACKAGE_OUTPUT_DIR}/pylibisbn
-            DEPENDS pylibisbn
+            DEPENDS pylibisbn ${SETUP_PY} ${PY_MODULE}
             COMMENT "Creating python package"
     )
 
     add_custom_target(python_package ALL DEPENDS ${OUTPUT})
 
-    install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" ${SETUP_PY} install)")
+    install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" ${SETUP_PY} install WORKING_DIRECTORY ${PY_PACKAGE_OUTPUT_DIR})")
     add_test(NAME testPyLibIsbn COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} test)
 
 

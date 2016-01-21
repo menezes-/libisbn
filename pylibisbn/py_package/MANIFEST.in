@@ -1,1 +1,0 @@
-recursive-include pylibisbn *.dll *.so *.pyd
