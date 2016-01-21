@@ -96,6 +96,7 @@ if (INSTALL_LIBISBN)
 endif ()
 # /LIBISBN
 
+enable_testing()
 #PYTHON BINDINGS
 
 if (PYTHON_EXECUTABLE)
@@ -159,9 +160,11 @@ if (PYTHON_EXECUTABLE)
             COMMENT "Creating python package"
     )
 
-    add_custom_target(target ALL DEPENDS ${OUTPUT})
+    add_custom_target(python_package ALL DEPENDS ${OUTPUT})
 
     install(CODE "execute_process(COMMAND \"${PYTHON_EXECUTABLE}\" ${SETUP_PY} install)")
+    add_test(NAME testPyLibIsbn COMMAND ${PYTHON_EXECUTABLE} ${SETUP_PY} test)
+
 
 endif ()
 
@@ -173,7 +176,6 @@ endif ()
 set(TESTING_FILES tests/tests.cpp tests/Catch/single_include/catch.hpp)
 add_executable(unittest ${TESTING_FILES} libisbn/include/libisbn.hpp)
 target_link_libraries(unittest libisbn)
-enable_testing()
 add_test(testLibIsbn unittest)
 
 # /UNIT TESTING
